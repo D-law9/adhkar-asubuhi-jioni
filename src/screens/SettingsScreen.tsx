@@ -123,7 +123,12 @@ export function SettingsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Rudi Nyuma">
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={16}
+          accessibilityRole="button"
+          accessibilityLabel="Rudi Nyuma"
+        >
           <Text style={styles.headerIcon}>‹</Text>
         </Pressable>
         <Text style={styles.headerTitle}>Mipangilio</Text>
@@ -138,6 +143,9 @@ export function SettingsScreen({ navigation }: Props) {
             <Pressable
               onPress={() => setScriptMode('arabic')}
               style={[styles.segmentButton, prefs.scriptMode === 'arabic' && styles.segmentButtonActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: prefs.scriptMode === 'arabic' }}
+              accessibilityLabel="Kiarabu"
             >
               <Text style={[styles.segmentText, prefs.scriptMode === 'arabic' && styles.segmentTextActive]}>
                 Kiarabu
@@ -146,6 +154,9 @@ export function SettingsScreen({ navigation }: Props) {
             <Pressable
               onPress={() => setScriptMode('translit')}
               style={[styles.segmentButton, prefs.scriptMode === 'translit' && styles.segmentButtonActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: prefs.scriptMode === 'translit' }}
+              accessibilityLabel="Matamshi"
             >
               <Text style={[styles.segmentText, prefs.scriptMode === 'translit' && styles.segmentTextActive]}>
                 Matamshi
@@ -161,6 +172,7 @@ export function SettingsScreen({ navigation }: Props) {
               value={prefs.showMeaning}
               onValueChange={toggleShowMeaning}
               trackColor={{ true: colors.teal, false: colors.line }}
+              accessibilityLabel="Onyesha Maana kwa Chaguo-Msingi"
             />
           </View>
         </View>
@@ -176,10 +188,17 @@ export function SettingsScreen({ navigation }: Props) {
                   value={prefs.reminders[session].enabled}
                   onValueChange={(value) => toggleReminder(session, value)}
                   trackColor={{ true: colors.teal, false: colors.line }}
+                  accessibilityLabel={`Kikumbusho cha ${SESSION_LABEL[session]}`}
                 />
               </View>
               {prefs.reminders[session].enabled && (
-                <Pressable onPress={() => setPickerFor(session)} style={styles.timeButton}>
+                <Pressable
+                  onPress={() => setPickerFor(session)}
+                  style={styles.timeButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Badilisha muda wa kikumbusho cha ${SESSION_LABEL[session]}, sasa ${formatTime(prefs.reminders[session].hour, prefs.reminders[session].minute)}`}
+                >
                   <Text style={styles.timeButtonText}>
                     Muda: {formatTime(prefs.reminders[session].hour, prefs.reminders[session].minute)}
                   </Text>
@@ -194,7 +213,13 @@ export function SettingsScreen({ navigation }: Props) {
 
         <Text style={styles.sectionTitle}>Data</Text>
         <View style={styles.card}>
-          <Pressable onPress={handleResetData}>
+          <Pressable
+            onPress={handleResetData}
+            style={styles.resetButton}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Weka Upya Data Yote"
+          >
             <Text style={styles.resetText}>Weka Upya Data Yote</Text>
           </Pressable>
         </View>
@@ -300,7 +325,9 @@ const styles = StyleSheet.create({
   },
   segmentButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 9,
     alignItems: 'center',
   },
@@ -328,8 +355,10 @@ const styles = StyleSheet.create({
   timeButton: {
     marginTop: 12,
     alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: 'center',
     borderRadius: 20,
     backgroundColor: colors.paper,
     borderWidth: 1,
@@ -346,6 +375,11 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.inkSoft,
     marginTop: 16,
+  },
+  resetButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingVertical: 10,
   },
   resetText: {
     fontFamily: fonts.uiSemiBold,

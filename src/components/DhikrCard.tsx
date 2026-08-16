@@ -15,7 +15,9 @@ interface Props {
 }
 
 export function DhikrCard({ item, session, scriptMode, showMeaning, tapCount, onTap }: Props) {
-  const tint = session === 'asubuhi' ? colors.gold : colors.teal;
+  // Text-safe accent: gold reads under WCAG AA at body-text sizes, so use the
+  // darker goldText variant here (SessionProgressBar/buttons keep true gold).
+  const tint = session === 'asubuhi' ? colors.goldText : colors.teal;
   const isOpenEnded = item.count === null;
   const remaining = isOpenEnded ? null : Math.max(0, item.count! - tapCount);
 
@@ -29,9 +31,16 @@ export function DhikrCard({ item, session, scriptMode, showMeaning, tapCount, on
           style={({ pressed }) => [styles.textArea, pressed && styles.textAreaPressed]}
           accessibilityRole="button"
           accessibilityLabel={`${item.sw.title}, gusa kuhesabu`}
+          accessibilityHint={
+            isOpenEnded ? `Umehesabu mara ${tapCount}` : `Umehesabu ${tapCount} kati ya ${item.count}`
+          }
         >
           {scriptMode === 'arabic' ? (
-            <Text style={styles.arabicText}>{item.arabic}</Text>
+            // Arabic script keeps a fixed calligraphic layout; Latin text below
+            // scales freely with the system font size per the design spec.
+            <Text style={styles.arabicText} maxFontSizeMultiplier={1.3}>
+              {item.arabic}
+            </Text>
           ) : (
             <Text style={styles.translitText}>{item.translit}</Text>
           )}
@@ -149,6 +158,6 @@ const styles = StyleSheet.create({
   sourceText: {
     fontFamily: fonts.ui,
     fontSize: 12,
-    color: colors.gold,
+    color: colors.goldText,
   },
 });

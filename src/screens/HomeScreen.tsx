@@ -59,8 +59,9 @@ export function HomeScreen({ navigation }: Props) {
           <Text style={styles.appTitle}>Adhkār</Text>
           <Pressable
             onPress={() => navigation.navigate('Settings')}
-            hitSlop={12}
+            hitSlop={16}
             style={styles.settingsButton}
+            accessibilityRole="button"
             accessibilityLabel="Mipangilio"
           >
             <Text style={styles.settingsIcon}>⚙</Text>
@@ -74,14 +75,21 @@ export function HomeScreen({ navigation }: Props) {
           const total = meta.items.length;
           const done = progress?.completed ? total : progress?.currentIndex ?? 0;
           const fraction = total > 0 ? done / total : 0;
-          const tint = sessionId === 'asubuhi' ? colors.gold : colors.teal;
+          // Text-safe accent: gold reads under WCAG AA at this text size.
+          const tint = sessionId === 'asubuhi' ? colors.goldText : colors.teal;
           const streakCount = prefs ? displayedStreak(prefs.streaks[sessionId]) : 0;
+
+          const statusLabel = progress?.completed
+            ? 'Imekamilika leo'
+            : `${done} kati ya ${total} imekamilika`;
 
           return (
             <Pressable
               key={sessionId}
               onPress={() => openSession(sessionId)}
               style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+              accessibilityRole="button"
+              accessibilityLabel={`${meta.title}. ${meta.timeWindow}. ${statusLabel}.`}
             >
               <HorizonMotif session={sessionId} progress={fraction} height={110} width={296} />
 
@@ -197,6 +205,6 @@ const styles = StyleSheet.create({
   streakText: {
     fontFamily: fonts.ui,
     fontSize: 12,
-    color: colors.gold,
+    color: colors.goldText,
   },
 });
