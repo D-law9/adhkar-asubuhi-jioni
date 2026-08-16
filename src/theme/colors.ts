@@ -9,6 +9,11 @@ export const colors = {
   tealDark: '#154f4c',
   gold: '#b4832b',
   goldLight: '#d9ac54',
+  // A darkened variant of `gold` for small text specifically — the spec's
+  // gold reads ~3.4:1 against paper/white, short of WCAG AA's 4.5:1 for
+  // normal text. Reserve `gold` for fills/icons/large text; use this for
+  // body-sized text (e.g. source citations, small labels).
+  goldText: '#886320',
   line: '#dde4ea',
   white: '#ffffff',
 };

@@ -33,6 +33,10 @@ export function SessionScreen({ route, navigation }: Props) {
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Blocks re-entrant navigation while a fade transition is in flight — without
+  // this, a quick double-tap on Ruka/Nyuma races two overlapping Animated
+  // sequences on the same fadeAnim value and can leave the card stuck invisible.
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -69,9 +73,12 @@ export function SessionScreen({ route, navigation }: Props) {
 
   const animateTo = useCallback(
     (nextIndex: number) => {
+      isTransitioningRef.current = true;
       Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }).start(() => {
         setIndex(nextIndex);
-        Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+        Animated.timing(fadeAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start(() => {
+          isTransitioningRef.current = false;
+        });
       });
     },
     [fadeAnim]
@@ -90,6 +97,7 @@ export function SessionScreen({ route, navigation }: Props) {
   }, [persist, prefs, sessionId, tapCounts, total, navigation]);
 
   const goToNext = useCallback(() => {
+    if (isTransitioningRef.current) return;
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
       advanceTimer.current = null;
@@ -104,6 +112,7 @@ export function SessionScreen({ route, navigation }: Props) {
   }, [index, total, animateTo, persist, tapCounts, finishSession]);
 
   const goToPrevious = useCallback(() => {
+    if (isTransitioningRef.current) return;
     if (advanceTimer.current) {
       clearTimeout(advanceTimer.current);
       advanceTimer.current = null;
@@ -157,13 +166,24 @@ export function SessionScreen({ route, navigation }: Props) {
 
   const item = session.items[index];
   const tint = sessionId === 'asubuhi' ? colors.gold : colors.teal;
+  // Text-safe accent for the toggle labels — gold reads under WCAG AA at this
+  // size, so the finish button (a fill, not text-on-page) keeps true `tint`.
+  const textTint = sessionId === 'asubuhi' ? colors.goldText : colors.teal;
+  // White-on-gold also fails AA at button-text size; dark ink clears it while
+  // white-on-teal already passes, so the label color depends on the fill.
+  const onTintText = sessionId === 'asubuhi' ? colors.ink : colors.white;
   const isOpenEnded = item.count === null;
   const tapCount = tapCounts[item.id] ?? 0;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} accessibilityLabel="Rudi Nyumbani">
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={16}
+          accessibilityRole="button"
+          accessibilityLabel="Rudi Nyumbani"
+        >
           <Text style={styles.headerIcon}>‹</Text>
         </Pressable>
         <Text style={styles.headerTitle}>{session.title}</Text>
@@ -178,13 +198,27 @@ export function SessionScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.toggleRow}>
-        <Pressable onPress={toggleScript} style={styles.toggleButton}>
-          <Text style={[styles.toggleText, { color: tint }]}>
+        <Pressable
+          onPress={toggleScript}
+          style={styles.toggleButton}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={
+            prefs.scriptMode === 'arabic' ? 'Badilisha kwenda Matamshi' : 'Badilisha kwenda Kiarabu'
+          }
+        >
+          <Text style={[styles.toggleText, { color: textTint }]}>
             {prefs.scriptMode === 'arabic' ? 'Kiarabu' : 'Matamshi'} ⇄
           </Text>
         </Pressable>
-        <Pressable onPress={toggleMeaning} style={styles.toggleButton}>
-          <Text style={[styles.toggleText, { color: tint }]}>
+        <Pressable
+          onPress={toggleMeaning}
+          style={styles.toggleButton}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={prefs.showMeaning ? 'Ficha Maana' : 'Onyesha Maana'}
+        >
+          <Text style={[styles.toggleText, { color: textTint }]}>
             {prefs.showMeaning ? '🙈 Ficha Maana' : '👁 Onyesha Maana'}
           </Text>
         </Pressable>
@@ -202,17 +236,36 @@ export function SessionScreen({ route, navigation }: Props) {
       </Animated.View>
 
       <View style={styles.footer}>
-        <Pressable onPress={goToPrevious} disabled={index === 0} hitSlop={12}>
+        <Pressable
+          onPress={goToPrevious}
+          disabled={index === 0}
+          hitSlop={16}
+          style={styles.footerNavButton}
+          accessibilityRole="button"
+          accessibilityLabel="Kipengele Kilichopita"
+          accessibilityState={{ disabled: index === 0 }}
+        >
           <Text style={[styles.footerNav, index === 0 && styles.footerNavDisabled]}>‹ Nyuma</Text>
         </Pressable>
 
         {isOpenEnded && (
-          <Pressable onPress={goToNext} style={[styles.finishButton, { backgroundColor: tint }]}>
-            <Text style={styles.finishButtonText}>Nimemaliza — endelea</Text>
+          <Pressable
+            onPress={goToNext}
+            style={[styles.finishButton, { backgroundColor: tint }]}
+            accessibilityRole="button"
+            accessibilityLabel="Nimemaliza, endelea"
+          >
+            <Text style={[styles.finishButtonText, { color: onTintText }]}>Nimemaliza — endelea</Text>
           </Pressable>
         )}
 
-        <Pressable onPress={goToNext} hitSlop={12}>
+        <Pressable
+          onPress={goToNext}
+          hitSlop={16}
+          style={styles.footerNavButton}
+          accessibilityRole="button"
+          accessibilityLabel="Ruka Kipengele Hiki"
+        >
           <Text style={styles.footerNav}>Ruka ›</Text>
         </Pressable>
       </View>
@@ -274,8 +327,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   toggleButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   toggleText: {
     fontFamily: fonts.uiMedium,
@@ -293,6 +348,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     gap: 12,
   },
+  footerNavButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
   footerNav: {
     fontFamily: fonts.uiMedium,
     fontSize: 14,
@@ -305,6 +366,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 24,
     paddingVertical: 12,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   finishButtonText: {

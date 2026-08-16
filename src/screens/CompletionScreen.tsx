@@ -16,6 +16,9 @@ export function CompletionScreen({ route, navigation }: Props) {
   const { sessionId } = route.params;
   const closing = getClosingContent(sessionId);
   const tint = sessionId === 'asubuhi' ? colors.gold : colors.teal;
+  // White-on-gold fails WCAG AA at button-text size; dark ink clears it while
+  // white-on-teal already passes, so the Rudia label color depends on the fill.
+  const onTintText = sessionId === 'asubuhi' ? colors.ink : colors.white;
 
   const [prefs, setPrefs] = useState<Preferences | null>(null);
 
@@ -40,7 +43,9 @@ export function CompletionScreen({ route, navigation }: Props) {
         <Text style={styles.title}>{closing.title}</Text>
 
         <View style={styles.duaCard}>
-          <Text style={styles.arabic}>{closing.dua.arabic}</Text>
+          <Text style={styles.arabic} maxFontSizeMultiplier={1.3}>
+            {closing.dua.arabic}
+          </Text>
           <Text style={styles.translit}>{closing.dua.translit}</Text>
           <Text style={styles.meaning}>{closing.dua.meaning}</Text>
           {closing.sourceCitation && <Text style={styles.source}>{closing.sourceCitation}</Text>}
@@ -63,11 +68,21 @@ export function CompletionScreen({ route, navigation }: Props) {
         {!prefs && <ActivityIndicator color={tint} style={{ marginTop: 8 }} />}
 
         <View style={styles.buttonRow}>
-          <Pressable onPress={handleHome} style={[styles.button, styles.homeButton]}>
+          <Pressable
+            onPress={handleHome}
+            style={[styles.button, styles.homeButton]}
+            accessibilityRole="button"
+            accessibilityLabel="Nenda Nyumbani"
+          >
             <Text style={styles.homeButtonText}>Nyumbani</Text>
           </Pressable>
-          <Pressable onPress={handleRudia} style={[styles.button, { backgroundColor: tint }]}>
-            <Text style={styles.buttonText}>Rudia</Text>
+          <Pressable
+            onPress={handleRudia}
+            style={[styles.button, { backgroundColor: tint }]}
+            accessibilityRole="button"
+            accessibilityLabel="Rudia Kipindi"
+          >
+            <Text style={[styles.buttonText, { color: onTintText }]}>Rudia</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -131,7 +146,7 @@ const styles = StyleSheet.create({
   source: {
     fontFamily: fonts.ui,
     fontSize: 11,
-    color: colors.gold,
+    color: colors.goldText,
   },
   messageBlock: {
     marginTop: 24,

@@ -11,7 +11,9 @@ interface Props {
 
 export function SessionProgressBar({ session, current, total }: Props) {
   const fraction = total > 0 ? Math.min(1, current / total) : 0;
-  const tint = session === 'asubuhi' ? colors.gold : colors.teal;
+  // True gold reads under 3:1 against the light track (WCAG non-text UI
+  // contrast); goldText clears it while teal already does at full strength.
+  const tint = session === 'asubuhi' ? colors.goldText : colors.teal;
 
   return (
     <View style={styles.track}>
