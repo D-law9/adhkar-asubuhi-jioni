@@ -9,10 +9,12 @@
     "backgroundColor": "#f4f6f8",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.adhkarasubuhijioni.app"
+      "bundleIdentifier": "com.adhkarasubuhijioni.app",
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.adhkarasubuhijioni.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#f4f6f8",
         "foregroundImage": "./assets/android-icon-foreground.png",
