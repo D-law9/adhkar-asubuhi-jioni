@@ -9,10 +9,17 @@ export interface StreakState {
   lastCompletedDate: string | null;
 }
 
+export interface ReminderSetting {
+  enabled: boolean;
+  hour: number;
+  minute: number;
+}
+
 export interface Preferences {
   scriptMode: ScriptMode;
   showMeaning: boolean;
   streaks: Record<SessionId, StreakState>;
+  reminders: Record<SessionId, ReminderSetting>;
 }
 
 const PREFS_KEY = '@adhkar/preferences';
@@ -24,6 +31,11 @@ const defaultPreferences: Preferences = {
     asubuhi: { count: 0, lastCompletedDate: null },
     jioni: { count: 0, lastCompletedDate: null },
   },
+  reminders: {
+    // Off by default until the person opts in (Play Store notification flow).
+    asubuhi: { enabled: false, hour: 6, minute: 0 },
+    jioni: { enabled: false, hour: 18, minute: 0 },
+  },
 };
 
 export async function loadPreferences(): Promise<Preferences> {
@@ -31,7 +43,12 @@ export async function loadPreferences(): Promise<Preferences> {
   if (!raw) return defaultPreferences;
   try {
     const parsed = JSON.parse(raw);
-    return { ...defaultPreferences, ...parsed, streaks: { ...defaultPreferences.streaks, ...parsed.streaks } };
+    return {
+      ...defaultPreferences,
+      ...parsed,
+      streaks: { ...defaultPreferences.streaks, ...parsed.streaks },
+      reminders: { ...defaultPreferences.reminders, ...parsed.reminders },
+    };
   } catch {
     return defaultPreferences;
   }

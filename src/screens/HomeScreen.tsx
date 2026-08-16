@@ -55,7 +55,17 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.appTitle}>Adhkār</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.appTitle}>Adhkār</Text>
+          <Pressable
+            onPress={() => navigation.navigate('Settings')}
+            hitSlop={12}
+            style={styles.settingsButton}
+            accessibilityLabel="Mipangilio"
+          >
+            <Text style={styles.settingsIcon}>⚙</Text>
+          </Pressable>
+        </View>
         <Text style={styles.appSubtitle}>Asubuhi na Jioni</Text>
 
         {(['asubuhi', 'jioni'] as SessionId[]).map((sessionId) => {
@@ -108,11 +118,26 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 40,
   },
+  titleRow: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   appTitle: {
     fontFamily: fonts.arabicBold,
     fontSize: 34,
     color: colors.ink,
     textAlign: 'center',
+  },
+  settingsButton: {
+    position: 'absolute',
+    right: 0,
+    top: 4,
+    padding: 6,
+  },
+  settingsIcon: {
+    fontSize: 22,
+    color: colors.inkSoft,
   },
   appSubtitle: {
     fontFamily: fonts.uiMedium,

@@ -5,6 +5,7 @@ import { RootStackParamList } from './types';
 import { HomeScreen } from '../screens/HomeScreen';
 import { SessionScreen } from '../screens/SessionScreen';
 import { CompletionScreen } from '../screens/CompletionScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { colors } from '../theme/colors';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,6 +25,7 @@ export function RootNavigator() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Session" component={SessionScreen} />
         <Stack.Screen name="Completion" component={CompletionScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
