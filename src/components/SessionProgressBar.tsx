@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   track: {
     height: 5,
     borderRadius: 3,
-    backgroundColor: colors.line,
+    backgroundColor: colors.parchmentDeep,
     overflow: 'hidden',
     width: '100%',
   },
