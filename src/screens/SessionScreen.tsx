@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { getSession } from '../data/sessions';
@@ -218,8 +219,9 @@ export function SessionScreen({ route, navigation }: Props) {
           accessibilityRole="button"
           accessibilityLabel={prefs.showMeaning ? 'Ficha Maana' : 'Onyesha Maana'}
         >
+          <Feather name={prefs.showMeaning ? 'eye-off' : 'eye'} size={15} color={textTint} />
           <Text style={[styles.toggleText, { color: textTint }]}>
-            {prefs.showMeaning ? '🙈 Ficha Maana' : '👁 Onyesha Maana'}
+            {prefs.showMeaning ? 'Ficha Maana' : 'Onyesha Maana'}
           </Text>
         </Pressable>
       </View>
@@ -327,6 +329,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 12,
     paddingHorizontal: 12,
     minHeight: 44,
