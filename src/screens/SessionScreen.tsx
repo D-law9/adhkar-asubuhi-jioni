@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { DhikrCard } from '../components/DhikrCard';
 import { SessionProgressBar } from '../components/SessionProgressBar';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
+import { getTypeScale, TypeScaleTokens } from '../theme/typeScale';
 import { DailyProgress, loadDailyProgress, saveDailyProgress } from '../storage/dailyProgress';
 import { loadPreferences, savePreferences, Preferences, bumpStreak } from '../storage/preferences';
 import { localDateKey } from '../utils/date';
@@ -157,6 +158,9 @@ export function SessionScreen({ route, navigation }: Props) {
     savePreferences(updated);
   }, [prefs]);
 
+  const t = useMemo(() => getTypeScale(prefs?.fontScale ?? 'medium'), [prefs?.fontScale]);
+  const styles = useMemo(() => makeStyles(t), [t]);
+
   if (loading || !prefs) {
     return (
       <SafeAreaView style={styles.loadingWrap}>
@@ -219,7 +223,7 @@ export function SessionScreen({ route, navigation }: Props) {
           accessibilityRole="button"
           accessibilityLabel={prefs.showMeaning ? 'Ficha Maana' : 'Onyesha Maana'}
         >
-          <Feather name={prefs.showMeaning ? 'eye-off' : 'eye'} size={15} color={textTint} />
+          <Feather name={prefs.showMeaning ? 'eye-off' : 'eye'} size={t.uiLabel.fontSize} color={textTint} />
           <Text style={[styles.toggleText, { color: textTint }]}>
             {prefs.showMeaning ? 'Ficha Maana' : 'Onyesha Maana'}
           </Text>
@@ -233,6 +237,7 @@ export function SessionScreen({ route, navigation }: Props) {
           scriptMode={prefs.scriptMode}
           showMeaning={prefs.showMeaning}
           tapCount={tapCount}
+          fontScale={prefs.fontScale}
           onTap={handleTap}
         />
       </Animated.View>
@@ -275,109 +280,111 @@ export function SessionScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.paper,
-  },
-  loadingWrap: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-  },
-  headerIcon: {
-    fontSize: 28,
-    color: colors.ink,
-    fontFamily: fonts.ui,
-    width: 32,
-  },
-  headerRightSpace: {
-    width: 32,
-  },
-  headerTitle: {
-    fontFamily: fonts.uiSemiBold,
-    fontSize: 16,
-    color: colors.ink,
-  },
-  progressWrap: {
-    paddingHorizontal: 20,
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  progressLabel: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 12,
-    color: colors.inkSoft,
-    minWidth: 40,
-    textAlign: 'right',
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-    marginTop: 14,
-    marginBottom: 4,
-  },
-  toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  toggleText: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 13,
-  },
-  cardWrap: {
-    flex: 1,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 8,
-    gap: 12,
-  },
-  footerNavButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  footerNav: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 14,
-    color: colors.inkSoft,
-  },
-  footerNavDisabled: {
-    opacity: 0.3,
-  },
-  finishButton: {
-    flex: 1,
-    borderRadius: 24,
-    paddingVertical: 12,
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  finishButtonText: {
-    fontFamily: fonts.uiSemiBold,
-    fontSize: 14,
-    color: colors.white,
-  },
-});
+function makeStyles(t: TypeScaleTokens) {
+  return StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.parchment,
+    },
+    loadingWrap: {
+      flex: 1,
+      backgroundColor: colors.parchment,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingTop: 4,
+    },
+    headerIcon: {
+      fontSize: 28,
+      color: colors.ink,
+      fontFamily: fonts.ui,
+      width: 32,
+    },
+    headerRightSpace: {
+      width: 32,
+    },
+    headerTitle: {
+      fontFamily: fonts.uiSemiBold,
+      fontSize: t.cardTitle.fontSize,
+      color: colors.ink,
+    },
+    progressWrap: {
+      paddingHorizontal: 20,
+      marginTop: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    progressLabel: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiSmall.fontSize,
+      color: colors.inkSoft,
+      minWidth: 40,
+      textAlign: 'right',
+    },
+    toggleRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 24,
+      marginTop: 14,
+      marginBottom: 4,
+    },
+    toggleButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      minHeight: 44,
+      justifyContent: 'center',
+    },
+    toggleText: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiLabel.fontSize,
+    },
+    cardWrap: {
+      flex: 1,
+    },
+    footer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      paddingBottom: 8,
+      gap: 12,
+    },
+    footerNavButton: {
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+      minHeight: 44,
+      justifyContent: 'center',
+    },
+    footerNav: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiLabel.fontSize,
+      color: colors.inkSoft,
+    },
+    footerNavDisabled: {
+      opacity: 0.3,
+    },
+    finishButton: {
+      flex: 1,
+      borderRadius: 24,
+      paddingVertical: 12,
+      minHeight: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    finishButtonText: {
+      fontFamily: fonts.uiSemiBold,
+      fontSize: t.uiLabel.fontSize,
+      color: colors.white,
+    },
+  });
+}

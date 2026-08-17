@@ -53,7 +53,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: colors.paper }} onLayout={onLayoutRootView}>
+      <View style={{ flex: 1, backgroundColor: colors.parchment }} onLayout={onLayoutRootView}>
         <RootNavigator />
         <StatusBar style="dark" />
       </View>

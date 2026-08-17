@@ -1,12 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Switch, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../navigation/types';
 import { SessionId } from '../types/dhikr';
+import { IlluminatedCard } from '../components/IlluminatedCard';
 import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
+import { FONT_SCALE_LABELS, FONT_SCALE_ORDER, FontScale, getTypeScale, TypeScaleTokens } from '../theme/typeScale';
 import { loadPreferences, savePreferences, Preferences, ScriptMode } from '../storage/preferences';
 import { resetAllData } from '../storage/resetAll';
 import { cancelReminder, requestNotificationPermission, scheduleReminder } from '../notifications/reminders';
@@ -29,6 +31,9 @@ export function SettingsScreen({ navigation }: Props) {
     loadPreferences().then(setPrefs);
   }, []);
 
+  const t = useMemo(() => getTypeScale(prefs?.fontScale ?? 'medium'), [prefs?.fontScale]);
+  const styles = useMemo(() => makeStyles(t), [t]);
+
   const persist = useCallback((updated: Preferences) => {
     setPrefs(updated);
     savePreferences(updated);
@@ -38,6 +43,14 @@ export function SettingsScreen({ navigation }: Props) {
     (scriptMode: ScriptMode) => {
       if (!prefs) return;
       persist({ ...prefs, scriptMode });
+    },
+    [prefs, persist]
+  );
+
+  const setFontScale = useCallback(
+    (fontScale: FontScale) => {
+      if (!prefs) return;
+      persist({ ...prefs, fontScale });
     },
     [prefs, persist]
   );
@@ -137,7 +150,27 @@ export function SettingsScreen({ navigation }: Props) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>Chaguo-Msingi</Text>
-        <View style={styles.card}>
+        <IlluminatedCard style={styles.card}>
+          <Text style={styles.rowLabel}>Ukubwa wa Maandishi</Text>
+          <View style={styles.segmented}>
+            {FONT_SCALE_ORDER.map((scale) => (
+              <Pressable
+                key={scale}
+                onPress={() => setFontScale(scale)}
+                style={[styles.segmentButton, prefs.fontScale === scale && styles.segmentButtonActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: prefs.fontScale === scale }}
+                accessibilityLabel={FONT_SCALE_LABELS[scale]}
+              >
+                <Text style={[styles.segmentText, prefs.fontScale === scale && styles.segmentTextActive]}>
+                  {FONT_SCALE_LABELS[scale]}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={styles.divider} />
+
           <Text style={styles.rowLabel}>Andiko la Kuonyesha</Text>
           <View style={styles.segmented}>
             <Pressable
@@ -175,10 +208,10 @@ export function SettingsScreen({ navigation }: Props) {
               accessibilityLabel="Onyesha Maana kwa Chaguo-Msingi"
             />
           </View>
-        </View>
+        </IlluminatedCard>
 
         <Text style={styles.sectionTitle}>Vikumbusho</Text>
-        <View style={styles.card}>
+        <IlluminatedCard style={styles.card}>
           {(['asubuhi', 'jioni'] as SessionId[]).map((session, i) => (
             <View key={session}>
               {i > 0 && <View style={styles.divider} />}
@@ -209,10 +242,10 @@ export function SettingsScreen({ navigation }: Props) {
           <Text style={styles.helperText}>
             Vikumbusho ni vya hiari na haviashirii wakati kamili wa faradhi — daima rejea saa za sala za eneo lako.
           </Text>
-        </View>
+        </IlluminatedCard>
 
         <Text style={styles.sectionTitle}>Data</Text>
-        <View style={styles.card}>
+        <IlluminatedCard style={styles.card}>
           <Pressable
             onPress={handleResetData}
             style={styles.resetButton}
@@ -222,10 +255,10 @@ export function SettingsScreen({ navigation }: Props) {
           >
             <Text style={styles.resetText}>Weka Upya Data Yote</Text>
           </Pressable>
-        </View>
+        </IlluminatedCard>
 
         <Text style={styles.sectionTitle}>Kuhusu Chanzo</Text>
-        <View style={styles.card}>
+        <IlluminatedCard style={styles.card}>
           <Text style={styles.aboutText}>
             Tafsiri za maana zilizomo humu ni ufafanuzi wa lugha rahisi, si tafsiri kamili ya kitaalamu (tafsir).
             Daraja za hadithi (kama ṣaḥīḥ au ḥasan) zinafuata kazi za Sheikh Muhammad Nāṣiruddīn al-Albānī —
@@ -237,7 +270,7 @@ export function SettingsScreen({ navigation }: Props) {
             Programu hii haikusanyi wala kutuma taarifa zako popote — data yote (maendeleo, mipangilio) inabaki
             kwenye kifaa chako pekee.
           </Text>
-        </View>
+        </IlluminatedCard>
       </ScrollView>
 
       {pickerFor && (
@@ -257,143 +290,141 @@ export function SettingsScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.paper,
-  },
-  loadingWrap: {
-    flex: 1,
-    backgroundColor: colors.paper,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-  },
-  headerIcon: {
-    fontSize: 28,
-    color: colors.ink,
-    fontFamily: fonts.ui,
-    width: 32,
-  },
-  headerRightSpace: {
-    width: 32,
-  },
-  headerTitle: {
-    fontFamily: fonts.uiSemiBold,
-    fontSize: 16,
-    color: colors.ink,
-  },
-  content: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 48,
-  },
-  sectionTitle: {
-    fontFamily: fonts.uiSemiBold,
-    fontSize: 12,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: colors.teal,
-    marginBottom: 8,
-    marginTop: 20,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: 18,
-  },
-  rowLabel: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 15,
-    color: colors.ink,
-    marginBottom: 10,
-  },
-  segmented: {
-    flexDirection: 'row',
-    backgroundColor: colors.paper,
-    borderRadius: 12,
-    padding: 4,
-    gap: 4,
-  },
-  segmentButton: {
-    flex: 1,
-    paddingVertical: 12,
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: 9,
-    alignItems: 'center',
-  },
-  segmentButtonActive: {
-    backgroundColor: colors.teal,
-  },
-  segmentText: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 14,
-    color: colors.inkSoft,
-  },
-  segmentTextActive: {
-    color: colors.white,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.line,
-    marginVertical: 16,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  timeButton: {
-    marginTop: 12,
-    alignSelf: 'flex-start',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 44,
-    justifyContent: 'center',
-    borderRadius: 20,
-    backgroundColor: colors.paper,
-    borderWidth: 1,
-    borderColor: colors.line,
-  },
-  timeButtonText: {
-    fontFamily: fonts.uiMedium,
-    fontSize: 13,
-    color: colors.teal,
-  },
-  helperText: {
-    fontFamily: fonts.meaningItalic,
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.inkSoft,
-    marginTop: 16,
-  },
-  resetButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingVertical: 10,
-  },
-  resetText: {
-    fontFamily: fonts.uiSemiBold,
-    fontSize: 15,
-    color: '#b3413c',
-    textAlign: 'center',
-  },
-  aboutText: {
-    fontFamily: fonts.meaning,
-    fontSize: 14,
-    lineHeight: 22,
-    color: colors.inkSoft,
-  },
-  aboutTextSpaced: {
-    marginTop: 14,
-  },
-});
+function makeStyles(t: TypeScaleTokens) {
+  return StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.parchment,
+    },
+    loadingWrap: {
+      flex: 1,
+      backgroundColor: colors.parchment,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingTop: 4,
+    },
+    headerIcon: {
+      fontSize: 28,
+      color: colors.ink,
+      fontFamily: fonts.ui,
+      width: 32,
+    },
+    headerRightSpace: {
+      width: 32,
+    },
+    headerTitle: {
+      fontFamily: fonts.uiSemiBold,
+      fontSize: t.cardTitle.fontSize,
+      color: colors.ink,
+    },
+    content: {
+      paddingHorizontal: 24,
+      paddingTop: 20,
+      paddingBottom: 48,
+    },
+    sectionTitle: {
+      fontFamily: fonts.uiSemiBold,
+      fontSize: t.sectionLabel.fontSize,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      color: colors.tealDeep,
+      marginBottom: 8,
+      marginTop: 20,
+    },
+    card: {
+      padding: 18,
+    },
+    rowLabel: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiLabel.fontSize,
+      color: colors.ink,
+      marginBottom: 10,
+    },
+    segmented: {
+      flexDirection: 'row',
+      backgroundColor: colors.parchmentDeep,
+      borderRadius: 12,
+      padding: 4,
+      gap: 4,
+    },
+    segmentButton: {
+      flex: 1,
+      paddingVertical: 12,
+      minHeight: 44,
+      justifyContent: 'center',
+      borderRadius: 9,
+      alignItems: 'center',
+    },
+    segmentButtonActive: {
+      backgroundColor: colors.teal,
+    },
+    segmentText: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiLabel.fontSize,
+      color: colors.inkSoft,
+    },
+    segmentTextActive: {
+      color: colors.white,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.line,
+      marginVertical: 16,
+    },
+    switchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    timeButton: {
+      marginTop: 12,
+      alignSelf: 'flex-start',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      minHeight: 44,
+      justifyContent: 'center',
+      borderRadius: 20,
+      backgroundColor: colors.parchmentDeep,
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
+    timeButtonText: {
+      fontFamily: fonts.uiMedium,
+      fontSize: t.uiSmall.fontSize,
+      color: colors.teal,
+    },
+    helperText: {
+      fontFamily: fonts.meaningItalic,
+      fontSize: t.uiSmall.fontSize,
+      lineHeight: t.uiSmall.fontSize * 1.5,
+      color: colors.inkSoft,
+      marginTop: 16,
+    },
+    resetButton: {
+      minHeight: 44,
+      justifyContent: 'center',
+      paddingVertical: 10,
+    },
+    resetText: {
+      fontFamily: fonts.uiSemiBold,
+      fontSize: t.uiLabel.fontSize,
+      color: '#b3413c',
+      textAlign: 'center',
+    },
+    aboutText: {
+      fontFamily: fonts.meaning,
+      fontSize: t.bodyText.fontSize,
+      lineHeight: t.bodyText.lineHeight,
+      color: colors.inkSoft,
+    },
+    aboutTextSpaced: {
+      marginTop: 14,
+    },
+  });
+}

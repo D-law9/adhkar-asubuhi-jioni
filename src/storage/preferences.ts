@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionId } from '../types/dhikr';
 import { localDateKey } from '../utils/date';
+import { FontScale } from '../theme/typeScale';
 
 export type ScriptMode = 'arabic' | 'translit';
 
@@ -18,6 +19,7 @@ export interface ReminderSetting {
 export interface Preferences {
   scriptMode: ScriptMode;
   showMeaning: boolean;
+  fontScale: FontScale;
   streaks: Record<SessionId, StreakState>;
   reminders: Record<SessionId, ReminderSetting>;
 }
@@ -27,6 +29,7 @@ const PREFS_KEY = '@adhkar/preferences';
 const defaultPreferences: Preferences = {
   scriptMode: 'arabic',
   showMeaning: true,
+  fontScale: 'medium',
   streaks: {
     asubuhi: { count: 0, lastCompletedDate: null },
     jioni: { count: 0, lastCompletedDate: null },
