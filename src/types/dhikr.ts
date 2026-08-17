@@ -16,6 +16,8 @@ export interface DhikrItem {
   openEndedLabel?: string;
   sourceCitation: string;
   sw: DhikrTranslation;
+  /** Reserved for future recitation audio; no player wired up yet. */
+  audioUrl?: string;
 }
 
 export type SessionId = 'asubuhi' | 'jioni';
@@ -26,6 +28,8 @@ export interface ClosingContent {
     arabic: string;
     translit: string;
     meaning: string;
+    /** Reserved for future recitation audio; no player wired up yet. */
+    audioUrl?: string;
   };
   messageLines: string[];
   sourceCitation?: string;
